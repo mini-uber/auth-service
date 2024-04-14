@@ -2,7 +2,7 @@ package main
 
 import (
 	"auth-service/pkg/auth/routes"
-	"auth-service/pkg/auth/database"
+	"auth-service/pkg/database"
 	"auth-service/pkg/config"
 	"fmt"
 	"log"

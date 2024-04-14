@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"auth-service/pkg/auth/database"
-	"auth-service/pkg/auth/jwt"
+	"auth-service/pkg/database"
+	"auth-service/pkg/jwt"
 	"auth-service/pkg/auth/models"
-	"auth-service/pkg/auth/utils"
+	"auth-service/pkg/utils"
 	"encoding/json"
 	"net/http"
 )
