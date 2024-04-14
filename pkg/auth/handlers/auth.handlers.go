@@ -1,4 +1,4 @@
-package routes
+package handlers
 
 import (
 	"auth-service/pkg/auth/database"
@@ -6,7 +6,6 @@ import (
 	"auth-service/pkg/auth/models"
 	"auth-service/pkg/auth/utils"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -22,7 +21,7 @@ type AuthResponse struct {
 func LoginUser(rw http.ResponseWriter, r *http.Request) {
 	var loginRequest LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
-		utils.HandleError(rw, http.StatusBadRequest, "Invalid request payload")
+		http.Error(rw, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
@@ -40,18 +39,18 @@ func LoginUser(rw http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
-		utils.HandleError(rw, http.StatusInternalServerError, "Error querying database")
+		http.Error(rw, "Cannot fetch user from database!", http.StatusInternalServerError)
 		return
 	}
 
 	if err := user.CheckPassword(loginRequest.Password); err != nil {
-		utils.HandleError(rw, http.StatusUnauthorized, "Invalid email or password")
+		http.Error(rw, "Invalid password", http.StatusUnauthorized)
 		return
 	}
 
 	token, err := jwt.GenerateJWT(user.Email)
 	if err != nil {
-		utils.HandleError(rw, http.StatusInternalServerError, "Error generating token")
+		http.Error(rw, "Error generating token", http.StatusInternalServerError)
 		return
 	}
 
@@ -62,12 +61,12 @@ func LoginUser(rw http.ResponseWriter, r *http.Request) {
 func RegisterUser(rw http.ResponseWriter, r *http.Request) {
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		utils.HandleError(rw, http.StatusBadRequest, "Invalid request payload")
+		http.Error(rw, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 	
 	if err := user.HashPassword(user.Password); err != nil {
-		utils.HandleError(rw, http.StatusInternalServerError, "Error hashing password")
+		http.Error(rw, "Error hashing password", http.StatusInternalServerError)
 		return
 	}
 
@@ -81,14 +80,13 @@ func RegisterUser(rw http.ResponseWriter, r *http.Request) {
 	).Scan(&user.ID)
 
 	if err != nil {
-		fmt.Println(err.Error())
-		utils.HandleError(rw, http.StatusInternalServerError, "Error creating user")
+		http.Error(rw, "Error inserting user into database", http.StatusInternalServerError)
 		return
 	}
 
 	token, err := jwt.GenerateJWT(user.Email)
 	if err != nil {
-		utils.HandleError(rw, http.StatusInternalServerError, "Error generating token")
+		http.Error(rw, "Error generating token", http.StatusInternalServerError)
 		return
 	}
 
